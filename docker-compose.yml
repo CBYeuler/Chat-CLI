@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:6.0
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ""
+      MONGO_INITDB_ROOT_PASSWORD: ""
+
+  # Optional: you can add a service for the server if you make a Dockerfile
+  # server:
+  #   build: .
+  #   command: python -m app.server
+  #   depends_on:
+  #     - mongo
+  #   environment:
+  #     MONGO_URI: "mongodb://mongo:27017"
+  #     DB_NAME: chat_db
+  #     PORT: 8765
+  #   ports:
+  #     - "8765:8765"
+
+volumes:
+  mongo-data:
