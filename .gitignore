@@ -1,0 +1,22 @@
+# Bytecode
+__pycache__/
+*.pyc
+
+# Env
+.env
+.env.* 
+.venv/
+venv/
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Docker
+docker-compose.override.yml

@@ -49,7 +49,7 @@ def pretty_print_system(obj: dict):
         # fallback
         print(f"[SERVER] {obj}")
 
-
+# Async input reader
 async def input_reader(loop):
     """
     Async wrapper around blocking sys.stdin.readline using executor.
@@ -57,7 +57,7 @@ async def input_reader(loop):
     """
     return (await loop.run_in_executor(None, sys.stdin.readline)).rstrip("\n")
 
-
+# Send loop
 async def send_loop(ws: websockets.WebSocketClientProtocol, username: str):
     """
     Reads user input and sends relevant JSON commands to server.
@@ -66,7 +66,7 @@ async def send_loop(ws: websockets.WebSocketClientProtocol, username: str):
     loop = asyncio.get_event_loop()
     current_room: Optional[str] = DEFAULT_ROOM
     print(f"(Current room: {current_room}) — type /help for commands")
-
+    # Main input loop
     while True:
         try:
             line = await input_reader(loop)
@@ -100,36 +100,36 @@ async def send_loop(ws: websockets.WebSocketClientProtocol, username: str):
                     continue
 
                 arg = parts[1].strip() if len(parts) > 1 else ""
-
+                # Handle commands with arguments
                 if cmd == "/create" and arg:
                     await ws.send(json.dumps({"type": "create_room", "name": arg}, ensure_ascii=False))
                     continue
-
+                # Handle commands with arguments
                 if cmd == "/join" and arg:
                     await ws.send(json.dumps({"type": "join_room", "name": arg}, ensure_ascii=False))
                     current_room = arg
                     print(f"(Current room set to: {current_room})")
                     continue
-
+                # Handle commands with arguments
                 if cmd == "/leave" and arg:
                     await ws.send(json.dumps({"type": "leave_room", "name": arg}, ensure_ascii=False))
                     if current_room == arg:
                         current_room = None
                         print("(Current room cleared)")
                     continue
-
+                # Handle commands without arguments
                 if cmd == "/rooms":
                     await ws.send(json.dumps({"type": "list_rooms"}, ensure_ascii=False))
                     continue
-
+                # Handle commands with arguments
                 if cmd == "/users" and arg:
                     await ws.send(json.dumps({"type": "list_users", "name": arg}, ensure_ascii=False))
                     continue
-
+                # Handle commands with arguments
                 if cmd == "/history" and arg:
                     await ws.send(json.dumps({"type": "history", "name": arg, "limit": 50}, ensure_ascii=False))
                     continue
-
+                # Handle commands with arguments
                 if cmd == "/room" and arg:
                     current_room = arg
                     print(f"(Current room set to: {current_room})")
@@ -145,7 +145,7 @@ async def send_loop(ws: websockets.WebSocketClientProtocol, username: str):
 
             payload = {"type": "message", "room": current_room, "content": line}
             await ws.send(json.dumps(payload, ensure_ascii=False))
-
+        # Handle connection closed or other exceptions
         except websockets.ConnectionClosed:
             print("Connection closed. Exiting send loop.")
             return
@@ -153,7 +153,7 @@ async def send_loop(ws: websockets.WebSocketClientProtocol, username: str):
             print(f"Send loop error: {e}")
             return
 
-
+# Receive loop
 async def recv_loop(ws: websockets.WebSocketClientProtocol):
     """
     Receives messages from server and prints them.
@@ -181,7 +181,7 @@ async def recv_loop(ws: websockets.WebSocketClientProtocol):
     except Exception as e:
         print(f"Receive loop error: {e}")
 
-
+# Main entry point
 async def main():
     """
     Connects to server, registers username, and runs send/recv loops concurrently.
@@ -226,7 +226,7 @@ async def main():
     except Exception as e:
         print(f"Could not connect to server at {uri}: {e}")
 
-
+#  Entry point
 if __name__ == "__main__":
     try:
         asyncio.run(main())

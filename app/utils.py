@@ -17,6 +17,7 @@ async def rate_limited(username: str) -> bool:
     # prune
     times = [t for t in times if (now - t).total_seconds() < RATE_LIMIT_WINDOW]
     user_message_times[username] = times
+    # check
     if len(times) >= RATE_LIMIT:
         return True
     time.append(now)
