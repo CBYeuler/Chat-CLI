@@ -8,22 +8,23 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ""
-      MONGO_INITDB_ROOT_PASSWORD: ""
 
-  # Optional: you can add a service for the server if you make a Dockerfile
-  # server:
-  #   build: .
-  #   command: python -m app.server
-  #   depends_on:
-  #     - mongo
-  #   environment:
-  #     MONGO_URI: "mongodb://mongo:27017"
-  #     DB_NAME: chat_db
-  #     PORT: 8765
-  #   ports:
-  #     - "8765:8765"
+  server:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      # make server use the mongo service inside compose network
+      MONGO_URI: "mongodb://mongo:27017"
+      DB_NAME: "chat_db"
+      PORT: 8765
+      HOST: 0.0.0.0
+    ports:
+      - "8765:8765"
+    volumes:
+      - ./app:/app/app:ro    # mount code for easier dev iteration (read-only)
+    # you can add: healthcheck for mongo dependency in a later step
 
 volumes:
   mongo-data:
