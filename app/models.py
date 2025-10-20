@@ -1,21 +1,17 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from typing import Set, Optional
 from bson import ObjectId
 
 # Custom Pydantic field for MongoDB ObjectId
 class PyObjectId(str):
-    def __new__(cls, oid = None):
-        if oid is None:
-            oid = ObjectId()
-        elif not ObjectId.is_valid(oid):
-            raise ValueError("Invalid ObjectId")
-        return str.__new__(cls, str(oid))
-
+    @classmethod
+    def __get_pydantic_json_schema__(cls, core_schema, handler):
+        return {"type": "string"}
 
 # User model
 class User(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    id: PyObjectId = Field(default_factory=lambda: str(ObjectId()), alias="_id")
     username: str
     email: str
     hashed_password: str
@@ -26,23 +22,35 @@ class User(BaseModel):
     is_superuser: bool = False
     full_name: Optional[str] = None
 
+    model_config = {
+        "arbitrary_types_allowed": True
+    }
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def validate_objectid(cls, v):
+        if not ObjectId.is_valid(str(v)):
+            raise ValueError("Invalid ObjectId")
+        return str(v)
+
     # Additional fields can be added as needed
-    class Config:
-        # Config class to handle ObjectId serialization
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        schema_extra = {
-            "example": {
-                "username": "johndoe",
-                "email": "
-                "hashed_password": "hashedpassword123",
-                "full_name": "John Doe",
-                "roles": ["user", "admin"],
-                "is_active": True,
-                "is_superuser": False
-            }
+class Config:
+    # Config class to handle ObjectId serialization
+    allow_population_by_field_name = True
+    arbitrary_types_allowed = True
+    json_encoders = {ObjectId: str}
+    schema_extra = {
+        "example": {
+            "username": "johndoe",
+            "email": "johndoe@example.com",  # <-- fixed
+            "hashed_password": "hashedpassword123",
+            "full_name": "John Doe",
+            "roles": ["user", "admin"],
+            "is_active": True,
+            "is_superuser": False
         }
+    }
+
 
 
 # Message model
