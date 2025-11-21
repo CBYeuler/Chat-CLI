@@ -1,5 +1,5 @@
 # Project
-
+```bash
 Project Structure/
 ├── app/
 │   ├── __init__.py
@@ -21,7 +21,7 @@ Project Structure/
 ├── start_server.sh
 ├── start_client.sh
 └── docker-compose.yml   
-
+```
 # chat-cli
 
 Async WebSocket chat server + minimal CLI client using Python asyncio, websockets and MongoDB.
